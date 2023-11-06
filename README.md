@@ -28,14 +28,15 @@ Since spglib (and codes which leverage it) can deal with symmetry for arbitrary 
 usage: quotate.py [-h] [--ibrav IBRAV] [-F OFORMAT] input output
 
 positional arguments:
-  input                 Input file name (xyz format)
-  output                Output file name (xyz format)
+  input                 Input file name (any ASE supported format)
+  output                Output file name (any ASE supported format)
 
 optional arguments:
   -h, --help            show this help message and exit
   --ibrav IBRAV         pw.x ibrav value
   -F OFORMAT, --oformat OFORMAT
-                        The output file format
+                        The output file format (If ASE can not deduce from
+                        <input>)
 ```
 
 ## Examples

@@ -31,8 +31,8 @@ def spglib_cell_to_ase_atoms(cell):
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("input", help="Input file name (xyz format)")
-    parser.add_argument("output", help="Output file name (xyz format)")
+    parser.add_argument("input", help="Input file name (any ASE supported format)")
+    parser.add_argument("output", help="Output file name (any ASE supported format)")
 #    parser.add_argument("--setting", default=1, type=int,
 #                        help="""
 #                        Spacegroup setting
@@ -40,7 +40,11 @@ def parse_arguments():
 #                        """)
     parser.add_argument("--ibrav", default=-1, type=int,
                         help="pw.x ibrav value")
-    parser.add_argument('-F', '--oformat', default='', help='The output file format')
+    parser.add_argument('-F', '--oformat', default='',
+                        help='''
+                        The output file format (If ASE can not deduce from <input>)
+                        '''
+                        )
     return parser.parse_args()
 
 
