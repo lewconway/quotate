@@ -33,11 +33,11 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("input", help="Input file name (xyz format)")
     parser.add_argument("output", help="Output file name (xyz format)")
-    parser.add_argument("--setting", default=1, type=int,
-                        help="""
-                        Spacegroup setting
-                        (ie. 1 = hexagonal basis, 2 = rhombohedral)
-                        """)
+#    parser.add_argument("--setting", default=1, type=int,
+#                        help="""
+#                        Spacegroup setting
+#                        (ie. 1 = hexagonal basis, 2 = rhombohedral)
+#                        """)
     parser.add_argument("--ibrav", default=-1, type=int,
                         help="pw.x ibrav value")
     parser.add_argument('-F', '--oformat', default='', help='The output file format')
