@@ -70,7 +70,34 @@ elif args.ibrav == 3:
     structure = make_supercell(structure, np.eye(3)*3, wrap=False)
     M = a/2 * np.array([[1, 1, 1], [-1, 1, 1], [-1, -1, 1]])
     M2 = structure.get_cell()
+elif args.ibrav == 5:
+    '''
+      5          Trigonal R, 3fold axis c        celldm(4)=cos(gamma)
+      The crystallographic vectors form a three-fold star around
+      the z-axis, the primitive cell is a simple rhombohedron:
+      v1 = a(tx,-ty,tz),   v2 = a(0,2ty,tz),   v3 = a(-tx,-ty,tz)
+      where c=cos(gamma) is the cosine of the angle gamma between
+      any pair of crystallographic vectors, tx, ty, tz are:
+        tx=sqrt((1-c)/2), ty=sqrt((1-c)/6), tz=sqrt((1+2c)/3)
+    '''
+    structure_spglib = ase_atoms_to_spglib_cell(structure)
 
+    structure_spglib = spglib.standardize_cell(
+        structure_spglib, symprec=0.1, to_primitive=True)
+
+    structure_prim = spglib_cell_to_ase_atoms(structure_spglib)
+
+    a = structure_prim.cell.cellpar()[0]
+    gamma = structure_prim.cell.cellpar()[5]
+    c = np.cos(gamma*np.pi/180)
+
+    tx = np.sqrt((1-c)/2)
+    ty = np.sqrt((1-c)/6)
+    tz = np.sqrt((1+2*c)/3)
+
+    structure = make_supercell(structure_prim, np.eye(3), wrap=False)
+    M = a * np.array([[tx, -ty, tz], [0, 2*ty, tz], [-tx, -ty, tz]])
+    M2 = structure.get_cell()
 else:
     print("ibrav not supported")
     exit()
