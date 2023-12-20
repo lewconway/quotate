@@ -74,12 +74,14 @@ if args.ibrav == 2:
     a = structure.cell.cellpar()[0]
     M = a/2 * np.array([[-1, 0, 1], [0, 1, 1], [-1, 1, 0]])
     M2 = structure.get_cell()
+    pos_tmp = structure.get_positions()@np.linalg.inv(M)
 
 elif args.ibrav == 3:
     a = structure.cell.cellpar()[0]
     structure = make_supercell(structure, np.eye(3)*3, wrap=False)
     M = a/2 * np.array([[1, 1, 1], [-1, 1, 1], [-1, -1, 1]])
     M2 = structure.get_cell()
+    pos_tmp = structure.get_positions()@np.linalg.inv(M)
 elif args.ibrav == 5:
     '''
       5          Trigonal R, 3fold axis c        celldm(4)=cos(gamma)
@@ -106,13 +108,15 @@ elif args.ibrav == 5:
     tz = np.sqrt((1+2*c)/3)
 
     structure = make_supercell(structure_prim, np.eye(3), wrap=False)
+    structure.wrap()
     M = a * np.array([[tx, -ty, tz], [0, 2*ty, tz], [-tx, -ty, tz]])
     M2 = structure.get_cell()
+
+    pos_tmp = structure.get_positions()@np.linalg.inv(M2)
 else:
     print("ibrav not supported")
     exit()
 
-pos_tmp = structure.get_positions()@np.linalg.inv(M)
 structure.set_cell(M)
 structure.set_scaled_positions(pos_tmp)
 structure.wrap()
