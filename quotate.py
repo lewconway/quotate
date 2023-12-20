@@ -1,7 +1,8 @@
-#! /usr/bin/env python3.9
+#! /usr/bin/env python
 from ase.io import read, write
 from ase.build import make_supercell
 from ase.geometry import get_duplicate_atoms
+from ase.spacegroup import get_spacegroup
 from ase import Atoms
 import argparse
 import numpy as np
@@ -38,7 +39,7 @@ def parse_arguments():
 #                        Spacegroup setting
 #                        (ie. 1 = hexagonal basis, 2 = rhombohedral)
 #                        """)
-    parser.add_argument("--ibrav", default=-1, type=int,
+    parser.add_argument("--ibrav", default=None, type=int,
                         help="pw.x ibrav value")
     parser.add_argument('-F', '--oformat', default='',
                         help='''
@@ -59,6 +60,15 @@ structure_spglib = ase_atoms_to_spglib_cell(structure)
 structure_spglib = spglib.standardize_cell(structure_spglib, symprec=0.1)
 
 structure = spglib_cell_to_ase_atoms(structure_spglib)
+
+spg = get_spacegroup(structure, symprec=0.1)
+
+if args.ibrav is None:
+    lattice_dict = {'F': 2, 'I': 3, 'R': 5}
+    try:
+        args.ibrav = lattice_dict[spg.lattice]
+    except KeyError:
+        args.ibrav = -1
 
 if args.ibrav == 2:
     a = structure.cell.cellpar()[0]
