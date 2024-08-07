@@ -29,6 +29,65 @@ def spglib_cell_to_ase_atoms(cell):
     """
     return Atoms(symbols=cell[2], scaled_positions=cell[1], cell=cell[0], pbc=True)
 
+def spg2ibrav(spg):
+
+    family = no2family(spg.no)
+
+    lattice = spg.lattice
+
+    ibrav_dict = {
+            # SC
+            1: ['cubic', 'P'],
+            # FCC
+            2: ['cubic', 'F'],
+            # BCC
+            3: ['cubic', 'I'],
+            # Hexagonal or Trigonal P
+            4: ['hexagonal', 'P'],
+            # Trigonal R
+            5: ['trigonal', 'P'],
+            # ST
+            6: ['tetragonal', 'P'],
+            # BCT
+            7: ['tetragonal', 'I'],
+            # Orthorhombic
+            8: ['orthorhombic', 'P'],
+            # Base Centred Orthorhombic
+            9: ['orthorhombic', 'A'],
+            # Face Centred Orthorhombic
+            10: ['orthorhombic', 'F'],
+            # Body Centred Orthorhombic
+            11: ['orthorhombic', 'I'],
+            # Monoclinic
+            12: ['monoclinic', 'P'],
+            # Monoclinic Base Centred
+            13: ['monoclinic', 'A'],
+            # Triclinic
+            14: ['triclinic', 'P']}
+
+    print(family, lattice)
+    for ibrav in ibrav_dict.keys():
+        pair = ibrav_dict[ibrav]
+        if family == pair[0] and lattice == pair[1]:
+            return ibrav
+    return -1
+
+
+
+def no2family(no):
+    space_group_to_lattice = {
+            'cubic':        range(195, 231),
+            'hexagonal':    range(168, 195),
+            'trigonal':     range(143, 168),
+            'tetragonal':   range(75, 143),
+            'orthorhombic': range(16, 75),
+            'monoclinic':   range(3, 16),
+            'triclinic':    range(1, 3),
+    }
+    for i in space_group_to_lattice.keys():
+        if no in space_group_to_lattice[i]:
+            return i
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
@@ -67,6 +126,8 @@ if args.ibrav is None:
     lattice_dict = {'F': 2, 'I': 3, 'R': 5}
     try:
         args.ibrav = lattice_dict[spg.lattice]
+        args.ibrav = spg2ibrav(spg)
+        print(spg2ibrav(spg), spg.no)
     except KeyError:
         args.ibrav = -1
 
@@ -112,7 +173,29 @@ elif args.ibrav == 5:
     M = a * np.array([[tx, -ty, tz], [0, 2*ty, tz], [-tx, -ty, tz]])
     M2 = structure.get_cell()
 
+    # I'm not sure why this is M2!!
     pos_tmp = structure.get_positions()@np.linalg.inv(M2)
+elif args.ibrav == 11:
+    '''
+       11          Orthorhombic body-centered      celldm(2)=b/a
+                                             celldm(3)=c/a
+      v1=(a/2,b/2,c/2),  v2=(-a/2,b/2,c/2),  v3=(-a/2,-b/2,c/2)
+
+    '''
+    structure_spglib = ase_atoms_to_spglib_cell(structure)
+
+    structure_spglib = spglib.standardize_cell(
+        structure_spglib, symprec=0.1, to_primitive=False)
+
+    structure_conv = spglib_cell_to_ase_atoms(structure_spglib)
+
+    a = structure_conv.cell.cellpar()[0]
+    b = structure_conv.cell.cellpar()[1]
+    c = structure_conv.cell.cellpar()[2]
+    structure = make_supercell(structure, np.eye(3)*3, wrap=False)
+    M = np.array([[a, b, c], [-a, b, c], [-a, -b, c]]) * 0.5
+    M2 = structure.get_cell()
+    pos_tmp = structure.get_positions()@np.linalg.inv(M)
 else:
     print("ibrav not supported")
     exit()
