@@ -175,6 +175,25 @@ elif args.ibrav == 5:
 
     # I'm not sure why this is M2!!
     pos_tmp = structure.get_positions()@np.linalg.inv(M2)
+elif args.ibrav == 7:
+    '''
+      7          Tetragonal I (bct)              celldm(3)=c/a
+      v1=(a/2)(1,-1,c/a),  v2=(a/2)(1,1,c/a),  v3=(a/2)(-1,-1,c/a)
+    '''
+    structure_spglib = ase_atoms_to_spglib_cell(structure)
+
+    structure_spglib = spglib.standardize_cell(
+        structure_spglib, symprec=0.1, to_primitive=False)
+
+    structure_conv = spglib_cell_to_ase_atoms(structure_spglib)
+
+    a = structure_conv.cell.cellpar()[0]
+    b = structure_conv.cell.cellpar()[1]
+    c = structure_conv.cell.cellpar()[2]
+    structure = make_supercell(structure, np.eye(3)*3, wrap=False)
+    M = np.array([[1, -1, c/a], [1, 1, c/a], [-1, -1, c/a]]) * a/2
+    M2 = structure.get_cell()
+    pos_tmp = structure.get_positions()@np.linalg.inv(M)
 elif args.ibrav == 11:
     '''
        11          Orthorhombic body-centered      celldm(2)=b/a
