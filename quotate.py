@@ -217,7 +217,7 @@ elif args.ibrav == 11:
     pos_tmp = structure.get_positions()@np.linalg.inv(M)
 else:
     print("ibrav not supported")
-    exit()
+    exit(1)
 
 structure.set_cell(M)
 structure.set_scaled_positions(pos_tmp)
